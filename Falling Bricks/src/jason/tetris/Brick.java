@@ -40,4 +40,16 @@ public abstract class Brick {
 		int row = (y + TILE_SIZE - 1)/TILE_SIZE;
 		return row;
 	}
+	
+	public void drop1Row() {
+		y += TILE_SIZE;
+	}
+	
+	public void rise1Row() {
+		y -= TILE_SIZE;
+	}
+	
+	public void fall(int changeY) {
+		y += changeY;
+	}
 }

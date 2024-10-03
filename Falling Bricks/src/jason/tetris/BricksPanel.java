@@ -3,11 +3,18 @@ package jason.tetris;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.util.Random;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.Timer;
+
+import jason.mycommonmethods.FileIO;
 
 public class BricksPanel extends JPanel {
 
@@ -25,11 +32,16 @@ public class BricksPanel extends JPanel {
 	private static final int SHAPE_T = 5;
 	private static final int SHAPE_Z = 6;
 	private static final int NUMBER_OF_SHAPES = 7;
+	private static final String SNAP_SOUND = "/snap.wav";
 	
 	private Brick brick;
 	private Random rand = new Random();
+	private BufferedImage[][] board;
+	private Tetris tetris;
+	private Timer timer;
 	
-	public BricksPanel() {
+	public BricksPanel(Tetris tetris) {
+		this.tetris = tetris;
 		initGUI();
 		
 		start();
@@ -54,7 +66,16 @@ public class BricksPanel extends JPanel {
 				case KeyEvent.VK_X:
 					rotateRight();
 					break;
+				case KeyEvent.VK_SPACE:
+					drop();
+					break;
 				}
+			}
+		});
+		
+		timer = new Timer(1000, new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				timedAction();
 			}
 		});
 	}
@@ -70,7 +91,15 @@ public class BricksPanel extends JPanel {
 		g.fillRect(0, 0, WIDTH, HEIGHT);
 		
 		// fallen bricks
-		
+		for (int row = 0; row<ROWS; row++) {
+			for (int col = 0; col<COLS; col++) {
+				int x = col * Brick.TILE_SIZE;
+				int y = row * Brick.TILE_SIZE;
+				if (board[row][col]!=null) {
+					g.drawImage(board[row][col], x, y, null);
+				}
+			}
+		}
 		
 		// falling brick
 		if (brick!=null) {
@@ -80,6 +109,8 @@ public class BricksPanel extends JPanel {
 	}
 	
 	public void start() {
+		timer.start();
+		board = new BufferedImage[ROWS][COLS];
 		pickABrick();
 	}
 	
@@ -109,6 +140,19 @@ public class BricksPanel extends JPanel {
 		case SHAPE_Z:
 			brick = new ZBrick(row,col);
 			break;
+		}
+		
+		if (!isLegal()) {
+			brick = null;
+			timer.stop();
+			String message = "Would you like to play again?";
+			int option = JOptionPane.showConfirmDialog(this, message);
+			if (option == JOptionPane.YES_OPTION) {
+				tetris.restart();
+			}
+			else {
+				System.exit(0);
+			}
 		}
 	}
 	
@@ -152,8 +196,6 @@ public class BricksPanel extends JPanel {
 		}
 	}
 	
-	
-	
 	private boolean isLegal() {
 		boolean legal = true;
 		int row = brick.getRow();
@@ -171,7 +213,105 @@ public class BricksPanel extends JPanel {
 			legal = false;
 		}
 		
+		// is the required space empty?
+		else {
+			for (int r = 0; r<brickRows; r++) {
+				for (int c = 0; c<brickCols; c++) {
+					if (brick.hasTileAt(r, c) && board[row + r][col + c]!=null) {
+						legal = false;
+					}
+				}
+			}
+		}
+		
 		return legal;
+	}
+	
+	private void drop() {
+		// drop brick to lowest legal position
+		boolean legal = true;
+		while (legal) {
+			brick.drop1Row();
+			if (!isLegal()) {
+				legal = false;
+				brick.rise1Row();
+			}
+		}
+		insertBrick();
+		
+		repaint();
+	}
+	
+	private void insertBrick() {
+		int brickRow = brick.getRow();
+		int brickCol = brick.getColumn();
+		int brickRows = brick.getNumberOfRows();
+		int brickCols = brick.getNumberOfColumns();
+		
+		for (int r =0; r<brickRows; r++) {
+			for (int c = 0; c<brickCols; c++) {
+				if (brick.hasTileAt(r, c)) {
+					int row = r + brickRow;
+					int col = c + brickCol;
+					board[row][col] = brick.getTileImage();
+				}
+			}
+		}
+		FileIO.playClip(this, SNAP_SOUND);
+		removeFilledRows();
+		pickABrick();
+	}
+	
+	private void removeFilledRows() {
+		int count = 0;
+		for (int row = ROWS -1; row>=0; row--) {
+			boolean filled = true;
+			for (int col = 0; col<COLS && filled; col++) {
+				if (board[row][col]==null) {
+					filled =false;
+				}
+			}
+			if (filled) {
+				for (int r = row; r>1; r--) {
+					for (int c = 0; c<COLS; c++) {
+						board[r][c] = board[r-1][c];
+					}
+				}
+				row++;
+				count++;
+			}
+		}
+		calculateScore(count);
+	}
+	
+	private void calculateScore(int count) {
+		switch (count) {
+		case 1:
+			tetris.addToScore(1);
+			break;
+		case 2:
+			tetris.addToScore(2);
+			break;
+		case 3:
+			tetris.addToScore(3);
+			break;
+		case 4:
+			tetris.addToScore(4);
+			break;
+		}
+	}
+	
+	private void timedAction() {
+		brick.fall(Brick.TILE_SIZE);
+		
+		// if can't fall further- set it into place
+		if (!isLegal()) {
+			brick.fall(-Brick.TILE_SIZE);
+			drop();
+		}
+		else {
+			repaint();
+		}
 	}
 
 }
