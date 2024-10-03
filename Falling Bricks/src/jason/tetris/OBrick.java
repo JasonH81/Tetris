@@ -5,16 +5,14 @@ import java.awt.image.BufferedImage;
 
 import jason.mycommonmethods.FileIO;
 
-public class SBrick extends Brick {
+public class OBrick extends Brick {
 
-	private static final String BRICK_FILE = "/redBrick.jpg";
-	private static final boolean TILES[][][] = {{{false, true, true},{true, true, false}}, {{true, false}, {true, true}, {false, true}}};
+	private static final String BRICK_FILE = "/yellowBrick.jpg";
+	private static final boolean TILES[][] = {{true, true},{true, true}};
 	
 	private static BufferedImage image;
 	
-	private int state = 0;
-	
-	public SBrick(int row, int col) {
+	public OBrick(int row, int col) {
 		super(row, col);
 		if (image == null) {
 			image = FileIO.readImageFile(this, BRICK_FILE);
@@ -22,12 +20,12 @@ public class SBrick extends Brick {
 	}
 	
 	public void draw(Graphics g) {
-		int rows = TILES[state].length;
-		int cols = TILES[state][0].length;
+		int rows = TILES.length;
+		int cols = TILES[0].length;
 		
 		for (int row = 0; row<rows; row++) {
 			for (int col = 0; col<cols; col++) {
-				if (TILES[state][row][col]) {
+				if (TILES[row][col]) {
 					int  tileX = x + (TILE_SIZE*col);
 					int tileY = y + (TILE_SIZE *row);
 					g.drawImage(image, tileX, tileY, null);
@@ -37,29 +35,21 @@ public class SBrick extends Brick {
 	}
 	
 	public int getNumberOfRows() {
-		return TILES[state].length;
+		return TILES.length;
 	}
 	
 	public int getNumberOfColumns() {
-		return TILES[state][0].length;
+		return TILES[0].length;
 	}
 	
 	public void rotateLeft() {
-		state--;
-		if (state<0) {
-			state = TILES.length -1;
-		}
 	}
 	
 	public void rotateRight() {
-		state++;
-		if (state>=TILES.length) {
-			state = 0;
-		}
 	}
 	
 	public boolean hasTileAt(int row, int col) {
-		return TILES[state][row][col];
+		return TILES[row][col];
 	}
 	
 	public BufferedImage getTileImage() {

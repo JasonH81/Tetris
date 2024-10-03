@@ -1,13 +1,24 @@
 package jason.tetris;
 
-public class Brick {
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+
+public abstract class Brick {
 	public static final int TILE_SIZE = 30;
 	
 	protected int x;
 	protected int y;
 	
+	public abstract void draw(Graphics g);
+	public abstract int getNumberOfRows();
+	public abstract int getNumberOfColumns();
+	public abstract void rotateLeft();
+	public abstract void rotateRight();
+	public abstract boolean hasTileAt(int row, int col);
+	public abstract BufferedImage getTileImage();
+	
 	public Brick(int row, int col) {
-		x = col * TILE_SIZE;
+		x = TILE_SIZE * (col- getNumberOfColumns()/2);
 		y = row * TILE_SIZE;
 	}
 	

@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.Random;
 
 import javax.swing.JPanel;
 
@@ -16,7 +17,17 @@ public class BricksPanel extends JPanel {
 	private static final int WIDTH = COLS * Brick.TILE_SIZE;
 	private static final int HEIGHT = ROWS * Brick.TILE_SIZE;
 	
-	private SBrick brick;
+	private static final int SHAPE_I = 0;
+	private static final int SHAPE_J = 1;
+	private static final int SHAPE_L = 2;
+	private static final int SHAPE_O = 3;
+	private static final int SHAPE_S = 4;
+	private static final int SHAPE_T = 5;
+	private static final int SHAPE_Z = 6;
+	private static final int NUMBER_OF_SHAPES = 7;
+	
+	private Brick brick;
+	private Random rand = new Random();
 	
 	public BricksPanel() {
 		initGUI();
@@ -36,6 +47,12 @@ public class BricksPanel extends JPanel {
 					break;
 				case KeyEvent.VK_RIGHT:
 					moveRight();
+					break;
+				case KeyEvent.VK_Z:
+					rotateLeft();
+					break;
+				case KeyEvent.VK_X:
+					rotateRight();
 					break;
 				}
 			}
@@ -69,7 +86,30 @@ public class BricksPanel extends JPanel {
 	private void pickABrick() {
 		int row = 0;
 		int col = COLS/2;
-		brick = new SBrick(row,col);
+		int pick = rand.nextInt(NUMBER_OF_SHAPES);
+		switch(pick) {
+		case SHAPE_I:
+			brick = new IBrick(row,col);
+			break;
+		case SHAPE_J:
+			brick = new JBrick(row,col);
+			break;
+		case SHAPE_L:
+			brick = new LBrick(row,col);
+			break;
+		case SHAPE_O:
+			brick = new OBrick(row,col);
+			break;
+		case SHAPE_S:
+			brick = new SBrick(row,col);
+			break;
+		case SHAPE_T:
+			brick = new TBrick(row,col);
+			break;
+		case SHAPE_Z:
+			brick = new ZBrick(row,col);
+			break;
+		}
 	}
 	
 	private void moveLeft() {
@@ -91,6 +131,28 @@ public class BricksPanel extends JPanel {
 			brick.moveLeft();
 		}
 	}
+	
+	private void rotateLeft() {
+		brick.rotateLeft();
+		if (isLegal()) {
+			repaint();
+		}
+		else {
+			brick.rotateRight();
+		}
+	}
+	
+	private void rotateRight() {
+		brick.rotateRight();
+		if (isLegal()) {
+			repaint();
+		}
+		else {
+			brick.rotateLeft();
+		}
+	}
+	
+	
 	
 	private boolean isLegal() {
 		boolean legal = true;

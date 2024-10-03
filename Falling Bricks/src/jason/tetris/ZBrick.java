@@ -5,16 +5,16 @@ import java.awt.image.BufferedImage;
 
 import jason.mycommonmethods.FileIO;
 
-public class SBrick extends Brick {
+public class ZBrick extends Brick {
 
-	private static final String BRICK_FILE = "/redBrick.jpg";
-	private static final boolean TILES[][][] = {{{false, true, true},{true, true, false}}, {{true, false}, {true, true}, {false, true}}};
+	private static final String BRICK_FILE = "/pinkBrick.jpg";
+	private static final boolean TILES[][][] = {{{true, true, false},{false, true, true}}, {{false, true}, {true, true}, {true, false}}};
 	
 	private static BufferedImage image;
 	
 	private int state = 0;
 	
-	public SBrick(int row, int col) {
+	public ZBrick(int row, int col) {
 		super(row, col);
 		if (image == null) {
 			image = FileIO.readImageFile(this, BRICK_FILE);
